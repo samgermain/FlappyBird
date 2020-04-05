@@ -18,7 +18,18 @@ function love.load()
 	}
 	game = {
 		started = false,
-		over = false
+		over = false,
+		score = {
+			cur = 0,
+			best = 0
+		}
+	}
+	images = {
+		tapToStart = love.graphics.newImage("images/tap_to_start.png"),
+		sprite1 = love.graphics.newImage("images/sprite1.png"),
+		sprite2 = love.graphics.newImage("images/sprite2.png"),
+		background = love.graphics.newImage("images/background.png"),
+		pipe = love.graphics.newImage("images/pipe.png")
 	}
 
 	--let's create the ground
@@ -35,14 +46,15 @@ function love.load()
 	ball = {
 		x = screen.w/2,
 		y = screen.h/2,
-		radius = 20
+		w = 40,
+		h = 40
 	}
 	ball.body = love.physics.newBody(world, ball.x, ball.y, "static") --place the body in the center of the world and make it dynamic, so it can move around
-	ball.shape = love.physics.newCircleShape(ball.radius) --the ball's shape has a radius of 20
+	ball.shape = love.physics.newRectangleShape(ball.w, ball.h) --the ball's shape has a radius of 20
 	ball.fixture = love.physics.newFixture(ball.body, ball.shape, 1) -- Attach fixture to body and give it a density of 1.
-	ball.fixture:setRestitution(0) --let the ball bounce 
 	ball.fixture:setFriction(0)
-   
+	
+
 	pipes = {}
 	while pipeStats.x < screen.w*2+1 do
 		table.insert(pipes, createPipes())	
@@ -60,21 +72,27 @@ function love.load()
 	ball.body:setY(screen.h/2)
 	ball.body:setType("static")
 	ball.body:setLinearVelocity(0, 0)
+	ball.body:setAngle(0)
+	ground.body:setX(screen.w/2)
+	ground.body:setY(screen.h - 50/2)
 	for _, pipe in pairs(pipes) do
 		pipe.one.body:setX(pipeStats.x)
 		pipe.two.body:setX(pipeStats.x)
 		pipeStats.x = pipeStats.x + pipeStats.space.x
+		pipe.scored = false
 	end
 	game.started = false
+	game.score.cur = 0
   end
 
   function createPipes()
-	pipeStats.space.h = love.math.random(100,160)
-	pipeStats.space.y = love.math.random(50, screen.h - (pipeStats.space.h+50))
+	space = {}
+	space.h = love.math.random(100,160)
+	space.y = love.math.random(50, screen.h - (space.h+50))
 	block1 = {
 		x = pipeStats.x,
 		width = pipeStats.w,
-		height = pipeStats.space.y - pipeStats.space.h/2
+		height = space.y - space.h/2
 	}
 	block1.y = block1.height / 2
 	block1.body = love.physics.newBody(world, block1.x, block1.y, "static")
@@ -84,34 +102,44 @@ function love.load()
 	block2 = {
 		x = pipeStats.x,
 		width = pipeStats.w,
-		height = screen.h - (block1.height + pipeStats.space.h)
+		height = screen.h - (block1.height + space.h)
 	}
-	block2.y = block1.height + pipeStats.space.h + block2.height/2
+	block2.y = block1.height + space.h + block2.height/2
 	block2.body = love.physics.newBody(world, block2.x, block2.y, "static")
 	block2.shape = love.physics.newRectangleShape(block2.width, block2.height)
 	block2.fixture = love.physics.newFixture(block2.body, block2.shape, 1)
 	pipeStats.x = pipeStats.x + pipeStats.space.x
-	return {one = block1, two = block2}
+	return {one = block1, two = block2, scored=false, space = space}
   end
    
   function love.update(dt)
 	Camera:follow(dt, ball)
 	world:update(dt) --this puts the world into motion
 	for _, pipe in pairs(pipes) do
-		if pipe.one.body:getX() < ball.body:getX() - (screen.w/2 + pipeStats.w/2) then	-- If the pipe is way off the screen
-			--reset the pipe to come up soon
+		if pipe.one.body:getX() < ball.body:getX() - (screen.w/2 + pipeStats.w/2) then	-- If the pipe is off the screen
+			--reset the pipe to come onto the screen
 			pipe.one.body:setX(ball.body:getX() + screen.w + pipeStats.w/2)
 			pipe.two.body:setX(ball.body:getX() + screen.w + pipeStats.w/2)
+			pipe.scored = false
+		end
+		if pipe.one.body:getX() <= ball.body:getX() and pipe.scored == false then
+			game.score.cur = game.score.cur + 1
+			pipe.scored = true
+			if game.score.cur > game.score.best then
+				game.score.best = game.score.cur
+			end
 		end
 		distance1, _, _, _, _ = love.physics.getDistance(ball.fixture, pipe.one.fixture)
 		distance2, _, _, _, _ = love.physics.getDistance(ball.fixture, pipe.two.fixture)
 		distance3, _, _, _, _ = love.physics.getDistance(ball.fixture, ground.fixture)
-		if distance1 == 0 or distance2 == 0 or distance3 == 0 then
-			if game.over == false then
+		if distance1 == 0 or distance2 == 0 or distance3 == 0 then	--If the player hit a pipe or the ground
+			if game.over == false then	
 				game.over = true
 				ball.body:setLinearVelocity(0, 0)
-				ball.body:setX(ball.body:getX() - 1)
-				-- ball.body:setY(ground.body:getY() - 2)
+				ball.body:setX(ball.body:getX())	--This line is why we need the if statement, otherwise the ball just keeps travelling backwards
+			end
+			if distance3 == 0 then
+				ball.body:setType("static")
 			end
 		end
 	end
@@ -124,29 +152,57 @@ function love.load()
 	love.graphics.setColor(0.28, 0.63, 0.05) -- set the drawing color to green for the ground
 	love.graphics.rectangle("fill", 0, ground.y - ground.height/2, ground.width, ground.height) -- draw a "filled in" polygon using the ground's coordinates
 	
-	love.graphics.setColor(0.76, 0.18, 0.05) --set the drawing color to red for the ball
-	love.graphics.circle("fill", ball.body:getX() - Camera.x, ball.body:getY(), ball.shape:getRadius())
+	love.graphics.setColor(1,1,1) --set the drawing color to red for the ball
+	ball.img = images.sprite1
+	ball.x = ball.body:getX() - Camera.x
+	ball.y = ball.body:getY()
+	ball.angle = ball.body:getAngle()
+	ball.sx = (ball.w)/ball.img:getWidth() 
+	ball.sy = (ball.h)/ball.img:getHeight()
+	ball.orientX = ball.img:getWidth()/2
+	ball.orientY = ball.img:getHeight()/2
+	love.graphics.draw(ball.img, ball.x, ball.y, ball.angle, ball.sx, ball.sy, ball.orientX, ball.orientY)
+--	love.graphics.circle("fill", ball.body:getX() - Camera.x, ball.body:getY(), ball.shape:getRadius())
    
 	love.graphics.setColor(0.20, 0.20, 0.20) -- set the drawing color to grey for the blocks
-	for _, pipe in pairs(pipes) do
-		x1, y1, x2, y2, x3, y3, x4, y4 = pipe.one.body:getWorldPoints(pipe.one.shape:getPoints())
-		love.graphics.polygon("fill", x1 - Camera.x, y1, x2 - Camera.x, y2, x3 - Camera.x, y3, x4 - Camera.x, y4)
-		x1, y1, x2, y2, x3, y3, x4, y4 = pipe.two.body:getWorldPoints(pipe.two.shape:getPoints())
-		love.graphics.polygon("fill", x1 - Camera.x, y1, x2 - Camera.x, y2, x3 - Camera.x, y3, x4 - Camera.x, y4)	
+	for _, pipe in pairs(pipes) do	--Draw the pipes
+		pipe.img = images.pipe
+		pipe.x = pipe.one.body:getX() + pipeStats.w/2 - Camera.x 
+		pipe.y = pipe.one.body:getY() + pipe.one.height/2
+		pipe.o = math.pi
+		pipe.sx = pipe.one.width/pipe.img:getWidth()
+		love.graphics.draw(pipe.img, pipe.x, pipe.y, pipe.o, pipe.sx, 1)
+
+		pipe.img = images.pipe
+		pipe.x = pipe.two.body:getX() - pipeStats.w/2 - Camera.x
+		pipe.y = pipe.two.body:getY() - pipe.two.height/2
+		pipe.o = 0
+		pipe.sx = pipe.two.width/pipe.img:getWidth()
+		love.graphics.draw(pipe.img, pipe.x, pipe.y, pipe.o, pipe.sx, 1)
 	end
 
-
+	if game.started == false then
+		love.graphics.draw(images.tapToStart, screen.w/2 - images.tapToStart:getWidth()/2, screen.h/2 - images.tapToStart:getHeight()/2)
+	else
+		font = love.graphics.newFont(14)
+		text = love.graphics.newText(font, "Score: "..game.score.cur)
+		love.graphics.draw(text, screen.w/2, screen.h * 3/4)
+	end
 
   end
 
 function love.keypressed(button)
 	if button == "space" then
 		if game.over == false then
+			game.started = true
 			ball.body:setType("dynamic")
 			ball.body:setLinearVelocity(200, 0)
 			ball.body:applyLinearImpulse(0, -100)
+			ball.body:setAngle(-0.3)
+			ball.body:setAngularVelocity(0)
+			ball.body:applyAngularImpulse( 70 )
+		else
+			newGame()	
 		end
-	elseif button == "r" then
-		newGame()
 	end
 end
