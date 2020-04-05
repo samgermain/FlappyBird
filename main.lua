@@ -6,8 +6,8 @@ function love.load()
 	screenH = 700
 	screenW = 1200
 	pipeW = 50
-	pipeSpcH = love.math.random(100,160)
-	pipeSpcY = love.math.random(50, screenH - (pipeSpcH+50))
+	pipeX = screenW
+	pipeSpace = screenW/2
 	started = false
 
 	--let's create the ground
@@ -27,14 +27,26 @@ function love.load()
 		y = screenH/2,
 		radius = 20
 	}
-	ball.body = love.physics.newBody(world, ball.x, ball.y, "dynamic") --place the body in the center of the world and make it dynamic, so it can move around
+	ball.body = love.physics.newBody(world, ball.x, ball.y, "static") --place the body in the center of the world and make it dynamic, so it can move around
 	ball.shape = love.physics.newCircleShape(ball.radius) --the ball's shape has a radius of 20
 	ball.fixture = love.physics.newFixture(ball.body, ball.shape, 1) -- Attach fixture to body and give it a density of 1.
 	ball.fixture:setRestitution(0) --let the ball bounce 
    
-	--let's create a couple blocks to play around with
+	pipes = {}
+	table.insert(pipes, createPipes())
+	table.insert(pipes, createPipes())
+	table.insert(pipes, createPipes())	
+
+	--initial graphics setup
+	love.graphics.setBackgroundColor(0.41, 0.53, 0.97) --set the background color to a nice blue
+	love.window.setMode(screenW, screenH) --set the window dimensions to 650 by 650
+  end
+
+  function createPipes()
+	pipeSpcH = love.math.random(100,160)
+	pipeSpcY = love.math.random(50, screenH - (pipeSpcH+50))
 	block1 = {
-		x = screenW,
+		x = pipeX,
 		width = pipeW,
 		height = pipeSpcY - pipeSpcH/2
 	}
@@ -44,7 +56,7 @@ function love.load()
 	block1.fixture = love.physics.newFixture(block1.body, block1.shape, 5) -- A higher density gives it more mass.
    
 	block2 = {
-		x = screenW,
+		x = pipeX,
 		width = pipeW,
 		height = screenH - (block1.height + pipeSpcH)
 	}
@@ -52,16 +64,19 @@ function love.load()
 	block2.body = love.physics.newBody(world, block2.x, block2.y, "static")
 	block2.shape = love.physics.newRectangleShape(block2.width, block2.height)
 	block2.fixture = love.physics.newFixture(block2.body, block2.shape, 1)
-	
-	--initial graphics setup
-	love.graphics.setBackgroundColor(0.41, 0.53, 0.97) --set the background color to a nice blue
-	love.window.setMode(screenW, screenH) --set the window dimensions to 650 by 650
+	pipeX = pipeX + pipeSpace
+	return {one = block1, two = block2}
   end
-   
    
   function love.update(dt)
 	Camera:follow(dt, ball)
 	world:update(dt) --this puts the world into motion
+	for _, pipe in pairs(pipes) do
+		if pipe.one.body:getX() < ball.body:getX() - screenW then
+			pipe.one.body:setX(ball.body:getX() + screenH)
+			pipe.two.body:setX(ball.body:getX() + screenH)
+		end
+	end
   end
    
   function love.draw()
@@ -73,22 +88,18 @@ function love.load()
 	love.graphics.circle("fill", ball.body:getX() - Camera.x, ball.body:getY(), ball.shape:getRadius())
    
 	love.graphics.setColor(0.20, 0.20, 0.20) -- set the drawing color to grey for the blocks
-	x1, y1, x2, y2, x3, y3, x4, y4 = block1.body:getWorldPoints(block1.shape:getPoints())
-	love.graphics.polygon("fill", x1 - Camera.x, y1, x2 - Camera.x, y2, x3 - Camera.x, y3, x4 - Camera.x, y4)
-	x1, y1, x2, y2, x3, y3, x4, y4 = block2.body:getWorldPoints(block2.shape:getPoints())
-	love.graphics.polygon("fill", x1 - Camera.x, y1, x2 - Camera.x, y2, x3 - Camera.x, y3, x4 - Camera.x, y4)
-	-- love.graphics.polygon("fill", block1.body:getWorldPoints(block1.shape:getPoints()))
-	-- love.graphics.polygon("fill", block2.body:getWorldPoints(block2.shape:getPoints()))
-	-- print(block1.body:getWorldPoints(block1.shape:getPoints()))
-
-	-- for _, line in pairs(lines) do
-	-- 	love.graphics.line( line.x1 - Camera.x, line.y1 - Camera.y, line.x2 - Camera.x, line.y2 - Camera.y) 
-	-- end
+	for _, pipe in pairs(pipes) do
+		x1, y1, x2, y2, x3, y3, x4, y4 = pipe.one.body:getWorldPoints(pipe.one.shape:getPoints())
+		love.graphics.polygon("fill", x1 - Camera.x, y1, x2 - Camera.x, y2, x3 - Camera.x, y3, x4 - Camera.x, y4)
+		x1, y1, x2, y2, x3, y3, x4, y4 = pipe.two.body:getWorldPoints(pipe.two.shape:getPoints())
+		love.graphics.polygon("fill", x1 - Camera.x, y1, x2 - Camera.x, y2, x3 - Camera.x, y3, x4 - Camera.x, y4)	
+	end
 
   end
 
 function love.keypressed(button)
 	if button == "space" then
+		ball.body:setType("dynamic")
 		ball.body:setLinearVelocity(200, 0)
 		ball.body:applyLinearImpulse(0, -100)
 		-- pause = not pause
