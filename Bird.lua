@@ -1,6 +1,5 @@
 require('Vars')
 require('World')
-require('Ground')
 
 Bird = {
     x = Screen.w/2,
@@ -31,25 +30,6 @@ function Bird.draw()
 	Bird.orientX = Bird.img:getWidth()/2
 	Bird.orientY = Bird.img:getHeight()/2
 	love.graphics.draw(Bird.img, Bird.x, Bird.y, Bird.angle, Bird.sx, Bird.sy, Bird.orientX, Bird.orientY)
-end
-
-function Bird:collision(pipe)
-    distance1, _, _, _, _ = love.physics.getDistance(Bird.fixture, pipe.one.fixture)
-	distance2, _, _, _, _ = love.physics.getDistance(Bird.fixture, pipe.two.fixture)
-	distance3, _, _, _, _ = love.physics.getDistance(Bird.fixture, Ground.fixture)
-	if distance1 == 0 or distance2 == 0 or distance3 == 0 then	--If the player hit a pipe or the Ground
-		if Game.over == false then	
-			Game.over = true
-			Bird.body:setLinearVelocity(0, 0)
-			Bird.body:setX(Bird.body:getX())	--This line is why we need the if statement, otherwise the Bird just keeps travelling backwards
-		end
-		if distance3 == 0 then
-			Bird.body:setType("static")
-		end
-    end
-    if Ground.body:getX() < Bird.body:getX() - Screen.w then
-        Ground.body:setX(Bird.body:getX())
-    end
 end
 
 function Bird.jump()

@@ -1,8 +1,11 @@
 require('Vars')
 require('World')
 require('Bird')
+require('Camera')
 
-Pipes = {}
+Pipes = {
+    pipes = {}
+}
 function Pipes.create()
 	space = {}
 	space.h = love.math.random(100,160)
@@ -31,11 +34,11 @@ function Pipes.create()
   end
 
 while PipeStats.x < Screen.w*2+1 do
-    table.insert(Pipes, Pipes.create())	
+    table.insert(Pipes.pipes, Pipes.create())	
 end
 
 function Pipes.reset()
-    for _, pipe in pairs(Pipes) do
+    for _, pipe in pairs(Pipes.pipes) do
 		pipe.one.body:setX(PipeStats.x)
 		pipe.two.body:setX(PipeStats.x)
 		PipeStats.x = PipeStats.x + PipeStats.space.x
@@ -43,9 +46,18 @@ function Pipes.reset()
     end
 end
 
+function Pipes:updatePosition(pipe)
+    if pipe.one.body:getX() < Bird.body:getX() - (Screen.w/2 + PipeStats.w/2) then	-- If the pipe is off the Screen
+        --reset the pipe to come onto the Screen
+        pipe.one.body:setX(Bird.body:getX() + Screen.w + PipeStats.w/2)
+        pipe.two.body:setX(Bird.body:getX() + Screen.w + PipeStats.w/2)
+        pipe.scored = false
+    end
+end
+
   function Pipes.draw()
     love.graphics.setColor(0.20, 0.20, 0.20) -- set the drawing color to grey for the blocks
-	for _, pipe in pairs(Pipes) do	--Draw the Pipes
+	for _, pipe in pairs(Pipes.pipes) do	--Draw the Pipes
 		pipe.img = Images.pipe
 		pipe.x = pipe.one.body:getX() + PipeStats.w/2 - Camera.x 
 		pipe.y = pipe.one.body:getY() + pipe.one.height/2
@@ -61,3 +73,15 @@ end
 		love.graphics.draw(pipe.img, pipe.x, pipe.y, pipe.o, pipe.sx, 1)
 	end  
   end
+
+  function Pipes:collision(pipe)
+    distance1, _, _, _, _ = love.physics.getDistance(Bird.fixture, pipe.one.fixture)
+	distance2, _, _, _, _ = love.physics.getDistance(Bird.fixture, pipe.two.fixture)
+	if distance1 == 0 or distance2 == 0 then	--If the player hit a pipe or the Ground
+		if Game.over == false then	
+			Game.over = true
+			Bird.body:setLinearVelocity(0, 0)
+			Bird.body:setX(Bird.body:getX())	--This line is why we need the if statement, otherwise the Bird just keeps travelling backwards
+		end
+    end
+end

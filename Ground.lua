@@ -1,4 +1,5 @@
 require('Vars')
+require('Bird')
 
 Ground = {
     x = Screen.w/2,
@@ -18,4 +19,20 @@ end
 function Ground.draw()
     love.graphics.setColor(0.28, 0.63, 0.05) -- set the drawing color to green for the Ground
 	love.graphics.rectangle("fill", 0, Ground.y - Ground.height/2, Ground.width, Ground.height) -- draw a "filled in" polygon using the Ground's coordinates
+end
+
+function Ground.collision()
+	distance3, _, _, _, _ = love.physics.getDistance(Bird.fixture, Ground.fixture)
+	if distance3 == 0 and Game.over == false then	--If the player hit a pipe or the Ground
+			Game.over = true
+			Bird.body:setLinearVelocity(0, 0)
+			Bird.body:setX(Bird.body:getX())	--This line is why we need the if statement, otherwise the Bird just keeps travelling backwards
+			Bird.body:setType("static")
+    end
+end
+
+function Ground.updatePosition()
+    if Ground.body:getX() < Bird.body:getX() - Screen.w then
+		Ground.body:setX(Bird.body:getX())
+	end
 end
