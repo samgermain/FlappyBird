@@ -2,22 +2,12 @@ require('Camera')
 require('Background')
 require('Bird')
 require('World')
+require('Ground')
 --Android banner
 --App ID:  ca-app-pub-6273488784837824~4269860143
 --Ad unit id: ca-app-pub-6273488784837824/7494611678
 
 function love.load()
-
-	--let's create the ground
-	ground = {
-		x = Screen.w/2,
-		y = Screen.h - 50/2,
-		width = Screen.w*2,
-		height = PipeStats.w
-	}
-	ground.body = love.physics.newBody(World, ground.x, ground.y, "static") --remember, the shape (the rectangle we create next) anchors to the body from its center, so we have to move it to (1700/2, 1000-50/2)
-	ground.shape = love.physics.newRectangleShape(ground.width, ground.height) --make a rectangle with a width of 1700 and a height of 50
-	ground.fixture = love.physics.newFixture(ground.body, ground.shape, 1); --attach shape to body, give it a density of 1. 
 
 	pipes = {}
 	while PipeStats.x < Screen.w*2+1 do
@@ -33,8 +23,7 @@ function love.load()
 	PipeStats.x = Screen.w
 	Game.over = false
 	Bird.reset()
-	ground.body:setX(Screen.w/2)
-	ground.body:setY(Screen.h - 50/2)
+	Ground.reset()
 	for _, pipe in pairs(pipes) do
 		pipe.one.body:setX(PipeStats.x)
 		pipe.two.body:setX(PipeStats.x)
@@ -94,22 +83,13 @@ function love.load()
 	end
 
 	Background.scroll()
-
-	if ground.body:getX() < Bird.body:getX() - Screen.w then
-		ground.body:setX(Bird.body:getX())
-	end
   end
    
   function love.draw()
 	--background
 	Background.draw()
-
-	love.graphics.setColor(1,1,1) --set the drawing color to red for the Bird
-
 	Bird.draw()
-	love.graphics.setColor(0.28, 0.63, 0.05) -- set the drawing color to green for the ground
-	love.graphics.rectangle("fill", 0, ground.y - ground.height/2, ground.width, ground.height) -- draw a "filled in" polygon using the ground's coordinates
-	
+	Ground.draw()
 
 	love.graphics.setColor(0.20, 0.20, 0.20) -- set the drawing color to grey for the blocks
 	for _, pipe in pairs(pipes) do	--Draw the pipes

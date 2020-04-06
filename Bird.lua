@@ -1,5 +1,6 @@
 require('Vars')
 require('World')
+require('Ground')
 
 Bird = {
     x = Screen.w/2,
@@ -35,8 +36,8 @@ end
 function Bird:collision(pipe)
     distance1, _, _, _, _ = love.physics.getDistance(Bird.fixture, pipe.one.fixture)
 	distance2, _, _, _, _ = love.physics.getDistance(Bird.fixture, pipe.two.fixture)
-	distance3, _, _, _, _ = love.physics.getDistance(Bird.fixture, ground.fixture)
-	if distance1 == 0 or distance2 == 0 or distance3 == 0 then	--If the player hit a pipe or the ground
+	distance3, _, _, _, _ = love.physics.getDistance(Bird.fixture, Ground.fixture)
+	if distance1 == 0 or distance2 == 0 or distance3 == 0 then	--If the player hit a pipe or the Ground
 		if Game.over == false then	
 			Game.over = true
 			Bird.body:setLinearVelocity(0, 0)
@@ -45,6 +46,9 @@ function Bird:collision(pipe)
 		if distance3 == 0 then
 			Bird.body:setType("static")
 		end
+    end
+    if Ground.body:getX() < Bird.body:getX() - Screen.w then
+        Ground.body:setX(Bird.body:getX())
     end
 end
 
