@@ -1,0 +1,2 @@
+love.physics.setMeter(64) --the height of a meter our Worlds will be 64px
+World = love.physics.newWorld(0, 15.81*64, true) --create a world for the bodies to exist in with horizontal gravity of 0 and vertical gravity of 9.81
