@@ -5,7 +5,7 @@ Ground = {
     x = Screen.w/2,
     y = Screen.h - 50/2,
     width = Screen.w*2,
-    height = PipeStats.w
+    height = 50
 }
 Ground.body = love.physics.newBody(World, Ground.x, Ground.y, "static") --remember, the shape (the rectangle we create next) anchors to the body from its center, so we have to move it to (1700/2, 1000-50/2)
 Ground.shape = love.physics.newRectangleShape(Ground.width, Ground.height) --make a rectangle with a width of 1700 and a height of 50
@@ -22,12 +22,14 @@ function Ground.draw()
 end
 
 function Ground.collision()
+    --Check if the player has hit the ground
 	distance3, _, _, _, _ = love.physics.getDistance(Bird.fixture, Ground.fixture)
-	if distance3 == 0 and Game.over == false then	--If the player hit a pipe or the Ground
-			Game.over = true
-			Bird.body:setLinearVelocity(0, 0)
-			Bird.body:setX(Bird.body:getX())	--This line is why we need the if statement, otherwise the Bird just keeps travelling backwards
-			Bird.body:setType("static")
+	if distance3 == 0 then	--If the player hit a pipe or the Ground
+        if Game.over == false then
+            Game.over = true
+    		Bird.body:setLinearVelocity(0, 0)   --Stop the player from moving
+	    end
+        Bird.body:setType("static") --disable the players ability to move
     end
 end
 

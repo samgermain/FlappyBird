@@ -15,7 +15,7 @@ function love.load()
 end
 
 function newGame()
-	PipeStats.x = Screen.w
+	Pipes.x = Screen.w
 	Game.over = false
 	Bird.reset()
 	Ground.reset()

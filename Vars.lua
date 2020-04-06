@@ -3,14 +3,6 @@ Screen = {
     h = 700
 }
 
-PipeStats = {
-    w = 50,
-    x = Screen.w,
-    space = {
-        x = Screen.w/2
-    }
-}
-
 Game = {
     started = false,
     over = false,
