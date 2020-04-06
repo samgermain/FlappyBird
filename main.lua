@@ -63,6 +63,7 @@ function love.keypressed(button)
 	if button == "space" then
 		if Game.over == false then
 			Game.started = true
+			Game.time = love.timer.getTime()
 			Bird.jump()
 		else
 			newGame()	

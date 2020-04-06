@@ -21,8 +21,12 @@ function Bird.reset()
 end
 
 function Bird.draw()
-    Bird.img = Images.sprite1
-	Bird.x = Bird.body:getX() - Camera.x
+    if love.timer.getTime() - Game.time < 0.2 then
+        Bird.img = Images.sprite1
+    else
+        Bird.img = Images.sprite2
+    end
+    Bird.x = Bird.body:getX() - Camera.x
 	Bird.y = Bird.body:getY()
 	Bird.angle = Bird.body:getAngle()
 	Bird.sx = (Bird.w)/Bird.img:getWidth() 

@@ -9,7 +9,8 @@ Game = {
     score = {
         cur = 0,
         best = 0
-    }
+    },
+    time = -1
 }
 
 Images = {
