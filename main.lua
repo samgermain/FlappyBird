@@ -9,13 +9,12 @@ require('Pipes')
 --Ad unit id: ca-app-pub-6273488784837824/7494611678
 
 function love.load()
-
 	--initial graphics setup
 	love.graphics.setBackgroundColor(0.41, 0.53, 0.97) --set the background color to a nice blue
 	love.window.setMode(Screen.w, Screen.h) --set the window dimensions to 650 by 650
-  end
+end
 
-  function newGame()
+function newGame()
 	PipeStats.x = Screen.w
 	Game.over = false
 	Bird.reset()
@@ -24,14 +23,14 @@ function love.load()
 	Background.reset()
 	Game.started = false
 	Game.score.cur = 0
-  end
+end
    
-  function love.update(dt)
+function love.update(dt)
 	Camera:follow(dt, Bird)
-	World:update(dt) --this puts the World into motion
+	World:update(dt) 
 	for _, pipe in pairs(Pipes.pipes) do
 		Pipes:updatePosition(pipe)
-		if pipe.one.body:getX() <= Bird.body:getX() and pipe.scored == false then
+		if pipe.one.body:getX() <= Bird.body:getX() and pipe.scored == false then	--Check if the player has passed a set of pipes
 			Game.score.cur = Game.score.cur + 1
 			pipe.scored = true
 			if Game.score.cur > Game.score.best then
@@ -43,10 +42,9 @@ function love.load()
 	Ground.collision()
 	Background.scroll()
 	Ground.updatePosition()
-  end
+end
    
-  function love.draw()
-	--background
+function love.draw()
 	Background.draw()
 	Bird.draw()
 	Ground.draw()
@@ -59,8 +57,7 @@ function love.load()
 		text = love.graphics.newText(font, "Score: "..Game.score.cur)
 		love.graphics.draw(text, Screen.w/2, Screen.h * 3/4)
 	end
-
-  end
+end
 
 function love.keypressed(button)
 	if button == "space" then

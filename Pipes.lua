@@ -4,7 +4,12 @@ require('Bird')
 require('Camera')
 
 Pipes = {
-    pipes = {}
+	pipes = {},
+	w = 50,
+    x = Screen.w,
+    space = {
+        x = Screen.w/2
+    }
 }
 function Pipes.create()
 	space = {}
