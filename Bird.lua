@@ -43,4 +43,5 @@ function Bird.jump()
     Bird.body:setAngle(-0.3)
     Bird.body:setAngularVelocity(0)
     Bird.body:applyAngularImpulse( 70 )
+    Sounds.wing:play()
 end

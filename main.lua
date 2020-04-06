@@ -36,6 +36,7 @@ function love.update(dt)
 			if Game.score.cur > Game.score.best then
 				Game.score.best = Game.score.cur
 			end
+			Sounds.point:play()
 		end
 		Pipes:collision(pipe)
 	end

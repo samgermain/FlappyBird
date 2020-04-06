@@ -3,6 +3,14 @@ Screen = {
     h = 700
 }
 
+Sounds = {
+    hit = love.audio.newSource("sounds/hit.wav", "static"),
+    fail = love.audio.newSource("sounds/fail.wav", "static"),
+    point = love.audio.newSource("sounds/point.wav", "static"),
+    swoosh = love.audio.newSource("sounds/swoosh.wav", "static"),
+    wing = love.audio.newSource("sounds/wing.wav", "static")
+}
+
 Game = {
     started = false,
     over = false,

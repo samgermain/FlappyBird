@@ -27,7 +27,8 @@ function Ground.collision()
 	if distance3 == 0 then	--If the player hit a pipe or the Ground
         if Game.over == false then
             Game.over = true
-    		Bird.body:setLinearVelocity(0, 0)   --Stop the player from moving
+            Bird.body:setLinearVelocity(0, 0)   --Stop the player from moving
+            Sounds.hit:play()
 	    end
         Bird.body:setType("static") --disable the players ability to move
     end

@@ -109,6 +109,8 @@ end
 			Game.over = true
 			Bird.body:setLinearVelocity(0, 0)
 			Bird.body:setX(Bird.body:getX())	--This line is why we need the if statement, otherwise the Bird just keeps travelling backwards
+			Sounds.hit:play()
+			Sounds.fail:play()
 		end
     end
 end
